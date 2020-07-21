@@ -7,7 +7,6 @@
 #include "TempMenu.h"
 
 #include <stack>
-#include <vector>
 
 class MenuManager {
 private:
