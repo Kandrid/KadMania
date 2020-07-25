@@ -9,6 +9,10 @@ public:
 		this->name = name;
 	}
 
+	void start() override {
+
+	}
+
 	Menu* select() override {
 		return nullptr;
 	}

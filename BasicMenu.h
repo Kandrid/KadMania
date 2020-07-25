@@ -5,25 +5,36 @@
 
 class BasicMenu : public Menu {
 private:
-	olc::Sprite selectionBox;
 public:
-	BasicMenu(const char name[]) {
+	olc::Sprite* background;
+
+	BasicMenu(const char name[], olc::Sprite* background) {
 		nested = true;
 		this->name = name;
 		this->options = options;
+		this->background = background;
+	}
+
+	void start() override {
+
 	}
 
 	Menu* select() override {
+
 		return options[selection];
 	}
 
 	void draw(olc::PixelGameEngine* engine) override {
-		if (options.size() > 0) {
-			uint32_t spacing = engine->ScreenHeight() / 12;
-			for (size_t i = 0; i < options.size(); i++) {
-				engine->DrawString(spacing, 10 + i * spacing, options[i]->getName(), i == selection ? olc::WHITE : olc::DARK_GREY, engine->ScreenHeight() / 100);
-			}
+		engine->SetPixelMode(olc::Pixel::Mode::ALPHA);
+		engine->DrawSprite(0, 0, background);
+
+		uint32_t spacing = engine->ScreenHeight() / 10;
+
+		for (size_t i = 0; i < options.size(); i++) {
+			engine->DrawString(spacing, spacing / 2 + i * spacing, options[i]->getName(), i == selection ? olc::WHITE : olc::PixelF(100, 100, 100, 0.5f), engine->ScreenHeight() / 100);
 		}
+
+		engine->SetPixelMode(olc::Pixel::Mode::NORMAL);
 	}
 
 	void exit() override {

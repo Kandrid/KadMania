@@ -5,6 +5,10 @@
 
 class ConfigMenu : public Menu {
 public:
+	void start() override {
+
+	}
+
 	Menu* select() override {
 		return nullptr;
 	}

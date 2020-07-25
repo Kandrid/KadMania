@@ -1,10 +1,18 @@
-#ifndef SONG_MENU_H
-#define SONG_MENU_H
+#ifndef PACK_MENU_H
+#define PACK_MENU_H
 
 #include "Menu.h"
 
-class SongMenu : public Menu {
+class PackMenu : public Menu {
 public:
+	PackMenu(std::string name) {
+		this->name = name;
+	}
+
+	void start() override {
+
+	}
+
 	Menu* select() override {
 		return nullptr;
 	}

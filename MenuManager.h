@@ -3,7 +3,7 @@
 
 #include "BasicMenu.h"
 #include "ConfigMenu.h"
-#include "SongMenu.h"
+#include "SongListMenu.h"
 #include "TempMenu.h"
 
 #include <stack>
@@ -25,27 +25,35 @@ public:
 	Menu* getCurrentMenu() { return menuStack.top(); }
 	Menu* getRootMenu() { return root; }
 
-	void upMenu() {
-		menuStack.top()->moveUp();
+	bool upMenu() {
+		return menuStack.top()->moveUp();
 	}
 
-	void downMenu() {
-		menuStack.top()->moveDown();
+	bool downMenu() {
+		return menuStack.top()->moveDown();
 	}
 
-	void selectMenu() {
+	bool selectMenu() {
 		Menu* newMenu = menuStack.top()->select();
 
-		if (newMenu->isNested()) {
-			menuStack.push(newMenu);
+		if (newMenu) {
+			newMenu->start();
+			if (newMenu->isNested()) {
+				menuStack.push(newMenu);
+				return true;
+			}
 		}
+
+		return false;
 	}
 
-	void exitMenu() {
+	bool exitMenu() {
 		if (menuStack.size() > 1) {
 			menuStack.top()->exit();
 			menuStack.pop();
+			return true;
 		}
+		return false;
 	}
 
 	void drawMenu() {
