@@ -2,18 +2,36 @@
 #include "olcPixelGameEngine.h"
 #include <SFML/Audio.hpp>
 #include "MenuManager.h"
+#include <chrono>
 #include <iostream>
 #include <memory>
 
 class KadMania : public olc::PixelGameEngine
 {
 private:
+	const double HELD_START_DELAY = 0.3;
+	const double HELD_DELAY = 0.07;
+
+	const std::string DEFAULT_MUSIC = "audio/ambience.ogg";
+
 	MenuManager mManager;
+
 	sf::Music jukebox;
 	sf::SoundBuffer tick, select, exit;
 	sf::Sound soundbox;
+
 	olc::Sprite* default_background;
+
 	uint32_t volume = 30;
+
+	std::chrono::high_resolution_clock clock;
+	std::chrono::high_resolution_clock::time_point t1, t2;
+
+	bool buttonHeld = false;
+
+	std::string musicPathBuffer = DEFAULT_MUSIC;
+	std::string musicPath = DEFAULT_MUSIC;
+
 public:
 	KadMania()
 	{
@@ -22,13 +40,14 @@ public:
 
 	bool OnUserCreate() override
 	{
+		t1 = t2 = clock.now();
+
 		default_background = new olc::Sprite("images/fallback.png");
 
 		BasicMenu* mainMenu = new BasicMenu("Main", default_background);
-		mainMenu->addOption(new SongListMenu("Songs", default_background));
+		mainMenu->addOption(new PackListMenu("Songs", default_background, &musicPathBuffer));
 		BasicMenu* optionMenu = new BasicMenu("Options", default_background);
-		optionMenu->addOption(new TempMenu("Volume"));
-		optionMenu->addOption(new TempMenu("Vsync"));
+		optionMenu->addOption(new ConfigMenu("Volume", &volume, 0, 100));
 		mainMenu->addOption(optionMenu);
 		mainMenu->addOption(new TempMenu("Exit"));
 
@@ -56,6 +75,30 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
+		if (musicPath != musicPathBuffer) {
+			if (musicPathBuffer == "") {
+				if (!jukebox.openFromFile("audio/ambience.ogg")) {
+					return false;
+				}
+				jukebox.setPlayingOffset(sf::milliseconds(1800));
+				jukebox.setLoop(true);
+				jukebox.play();
+				musicPath = DEFAULT_MUSIC;
+			}
+			else {
+				if (!jukebox.openFromFile(musicPathBuffer)) {
+					return false;
+				}
+				jukebox.setLoop(true);
+				jukebox.play();
+				musicPath = musicPathBuffer;
+			}
+		}
+
+		soundbox.setVolume(100.0f * volume / 100.0f);
+		jukebox.setVolume(25.0f * volume / 100.0f);
+
+
 		if (GetKey(olc::Key::ESCAPE).bPressed) {
 			if (mManager.exitMenu()) {
 				soundbox.setBuffer(exit);
@@ -78,15 +121,44 @@ public:
 			}
 		}
 		else if (GetKey(olc::Key::UP).bPressed) {
+			t1 = clock.now();
 			if (mManager.upMenu()) {
 				soundbox.setBuffer(tick);
 				soundbox.play();
 			}
 		}
 		else if (GetKey(olc::Key::DOWN).bPressed) {
+			t1 = clock.now();
 			if (mManager.downMenu()) {
 				soundbox.setBuffer(tick);
 				soundbox.play();
+			}
+		}
+		else {
+			t2 = clock.now();
+			double duration = std::chrono::duration<double>(t2 - t1).count();
+
+			if (duration >= HELD_START_DELAY|| (buttonHeld && duration >= HELD_DELAY)) {
+				if (GetKey(olc::Key::UP).bHeld) {
+					buttonHeld = true;
+					t1 = clock.now();
+					if (mManager.upMenu()) {
+						soundbox.setBuffer(tick);
+						soundbox.play();
+					}
+				}
+				else if (GetKey(olc::Key::DOWN).bHeld) {
+					buttonHeld = true;
+					t1 = clock.now();
+					if (mManager.downMenu()) {
+						soundbox.setBuffer(tick);
+						soundbox.play();
+					}
+				}
+				else {
+					t1 = t2 = clock.now();
+					buttonHeld = false;
+				}
 			}
 		}
 

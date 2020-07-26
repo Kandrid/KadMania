@@ -1,22 +1,35 @@
-#ifndef BASIC_MENU_H
-#define BASIC_MENU_H
+#ifndef PACK_LIST_MENU_H
+#define PACK_LIST_MENU_H
 
 #include "Menu.h"
+#include "PackMenu.h"
 
-class BasicMenu : public Menu {
+#include <filesystem>
+
+class PackListMenu : public Menu {
 private:
-public:
 	olc::Sprite* background;
-
-	BasicMenu(const char name[], olc::Sprite* background) {
-		nested = true;
+	std::string* musicPath;
+public:
+	PackListMenu(const char name[], olc::Sprite* background, std::string* musicPath) {
+		this->nested = true;
 		this->name = name;
-		this->options = options;
 		this->background = background;
+		this->musicPath = musicPath;
+	}
+
+	void loadPackList() {
+		options.clear();
+
+		for (const auto& entry : std::filesystem::directory_iterator("./Songs")) {
+			if (entry.is_directory()) {
+				options.push_back(new PackMenu(entry.path().filename().string(), background, musicPath));
+			}
+		}
 	}
 
 	void start() override {
-
+		loadPackList();
 	}
 
 	Menu* select() override {
@@ -25,7 +38,6 @@ public:
 
 	void draw(olc::PixelGameEngine* engine) override {
 		engine->DrawSprite(0, 0, background);
-
 		engine->SetPixelMode(olc::Pixel::Mode::ALPHA);
 
 		uint32_t spacing = engine->ScreenHeight() / options.size();
@@ -44,7 +56,10 @@ public:
 	}
 
 	void exit() override {
-
+		for (size_t i = 0; i < options.size(); i++) {
+			delete options[i];
+			options[i] = nullptr;
+		}
 	}
 };
 

@@ -19,7 +19,7 @@ public:
 		options.push_back(option);
 	}
 
-	bool moveUp() {
+	virtual bool moveUp() {
 		if (selection > 0) {
 			selection--;
 			return true;
@@ -27,7 +27,7 @@ public:
 		return false;
 	}
 
-	bool moveDown() {
+	virtual bool moveDown() {
 		if (selection < options.size() - 1) {
 			selection++;
 			return true;

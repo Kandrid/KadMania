@@ -38,10 +38,10 @@
     <ClInclude Include="TempMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SongListMenu.h">
+    <ClInclude Include="PackMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PackMenu.h">
+    <ClInclude Include="PackListMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
