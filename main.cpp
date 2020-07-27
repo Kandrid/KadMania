@@ -20,7 +20,7 @@ private:
 	sf::SoundBuffer tick, select, exit;
 	sf::Sound soundbox;
 
-	olc::Sprite* default_background;
+	std::shared_ptr<olc::Sprite> default_background;
 
 	uint32_t volume = 30;
 
@@ -42,14 +42,14 @@ public:
 	{
 		t1 = t2 = clock.now();
 
-		default_background = new olc::Sprite("images/fallback.png");
+		default_background = std::make_shared<olc::Sprite>("images/fallback.png");
 
-		BasicMenu* mainMenu = new BasicMenu("Main", default_background);
-		mainMenu->addOption(new PackListMenu("Songs", default_background, &musicPathBuffer));
-		BasicMenu* optionMenu = new BasicMenu("Options", default_background);
-		optionMenu->addOption(new ConfigMenu("Volume", &volume, 0, 100));
+		std::shared_ptr<BasicMenu> mainMenu = std::make_shared<BasicMenu>("Main", default_background);
+		mainMenu->addOption(std::make_shared<PackListMenu>("Songs", default_background, &musicPathBuffer));
+		std::shared_ptr<BasicMenu> optionMenu = std::make_shared<BasicMenu>("Options", default_background);
+		optionMenu->addOption(std::make_shared<ConfigMenu>("Volume", &volume, 0, 100));
 		mainMenu->addOption(optionMenu);
-		mainMenu->addOption(new TempMenu("Exit"));
+		mainMenu->addOption(std::make_shared<TempMenu>("Exit"));
 
 		mManager = MenuManager(mainMenu, this);
 
@@ -69,7 +69,6 @@ public:
 
 	bool OnUserDestroy() override {
 		mManager.cleanup();
-		delete default_background;
 		return true;
 	}
 

@@ -11,20 +11,20 @@
 
 class MenuManager {
 private:
-	olc::PixelGameEngine* engine = nullptr;
-	std::stack<Menu*> menuStack;
-	Menu* root = nullptr;
+	olc::PixelGameEngine* engine;
+	std::stack<std::shared_ptr<Menu>> menuStack;
+	std::shared_ptr<Menu> root;
 public:
 	MenuManager() {}
 
-	MenuManager(Menu* root, olc::PixelGameEngine* engine) {
+	MenuManager(std::shared_ptr<Menu> root, olc::PixelGameEngine* engine) {
 		this->engine = engine;
 		this->root = root;
 		menuStack.push(root);
 	}
 
-	Menu* getCurrentMenu() { return menuStack.top(); }
-	Menu* getRootMenu() { return root; }
+	std::shared_ptr<Menu> getCurrentMenu() { return menuStack.top(); }
+	std::shared_ptr<Menu> getRootMenu() { return root; }
 
 	bool upMenu() {
 		return menuStack.top()->moveUp();
@@ -35,7 +35,7 @@ public:
 	}
 
 	bool selectMenu() {
-		Menu* newMenu = menuStack.top()->select();
+		std::shared_ptr<Menu> newMenu = menuStack.top()->select();
 
 		if (newMenu) {
 			newMenu->start();

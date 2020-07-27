@@ -6,9 +6,9 @@
 class BasicMenu : public Menu {
 private:
 public:
-	olc::Sprite* background;
+	std::shared_ptr<olc::Sprite> background;
 
-	BasicMenu(const char name[], olc::Sprite* background) {
+	BasicMenu(const char name[], std::shared_ptr<olc::Sprite> background) {
 		nested = true;
 		this->name = name;
 		this->options = options;
@@ -19,12 +19,12 @@ public:
 
 	}
 
-	Menu* select() override {
+	std::shared_ptr<Menu> select() override {
 		return options[selection];
 	}
 
 	void draw(olc::PixelGameEngine* engine) override {
-		engine->DrawSprite(0, 0, background);
+		engine->DrawSprite(0, 0, background.get());
 
 		engine->SetPixelMode(olc::Pixel::Mode::ALPHA);
 

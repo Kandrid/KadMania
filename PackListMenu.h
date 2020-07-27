@@ -8,10 +8,10 @@
 
 class PackListMenu : public Menu {
 private:
-	olc::Sprite* background;
+	std::shared_ptr<olc::Sprite> background;
 	std::string* musicPath;
 public:
-	PackListMenu(const char name[], olc::Sprite* background, std::string* musicPath) {
+	PackListMenu(const char name[], std::shared_ptr<olc::Sprite> background, std::string* musicPath) {
 		this->nested = true;
 		this->name = name;
 		this->background = background;
@@ -23,7 +23,7 @@ public:
 
 		for (const auto& entry : std::filesystem::directory_iterator("./Songs")) {
 			if (entry.is_directory()) {
-				options.push_back(new PackMenu(entry.path().filename().string(), background, musicPath));
+				options.push_back(std::make_shared<PackMenu>(entry.path().filename().string(), background, musicPath));
 			}
 		}
 	}
@@ -32,12 +32,12 @@ public:
 		loadPackList();
 	}
 
-	Menu* select() override {
+	std::shared_ptr<Menu> select() override {
 		return options[selection];
 	}
 
 	void draw(olc::PixelGameEngine* engine) override {
-		engine->DrawSprite(0, 0, background);
+		engine->DrawSprite(0, 0, background.get());
 		engine->SetPixelMode(olc::Pixel::Mode::ALPHA);
 
 		uint32_t spacing = engine->ScreenHeight() / options.size();
@@ -56,10 +56,7 @@ public:
 	}
 
 	void exit() override {
-		for (size_t i = 0; i < options.size(); i++) {
-			delete options[i];
-			options[i] = nullptr;
-		}
+
 	}
 };
 

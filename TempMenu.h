@@ -13,7 +13,7 @@ public:
 
 	}
 
-	Menu* select() override {
+	std::shared_ptr<Menu> select() override {
 		return nullptr;
 	}
 

@@ -12,12 +12,12 @@ private:
 	const uint32_t BANNER_WIDTH = 512;
 	const uint32_t BANNER_HEIGHT = 160;
 
-	olc::Sprite* banner;
-	olc::Sprite* background;
+	std::shared_ptr<olc::Sprite> banner;
+	std::shared_ptr<olc::Sprite> background;
 
 	std::string* musicPath;
 public:
-	PackMenu(std::string name, olc::Sprite* background, std::string* musicPath) {
+	PackMenu(std::string name, std::shared_ptr<olc::Sprite> background, std::string* musicPath) {
 		this->nested = true;
 		this->name = name;
 		this->background = background;
@@ -29,7 +29,7 @@ public:
 
 		for (const auto& entry : std::filesystem::directory_iterator("./Songs/" + name)) {
 			if (entry.is_directory()) {
-				options.push_back(new TempMenu(entry.path().filename().string().c_str()));
+				options.push_back(std::make_shared<TempMenu>(entry.path().filename().string().c_str()));
 			}
 		}
 	}
@@ -162,8 +162,6 @@ public:
 	}
 
 	void loadAssets() {
-		delete banner;
-		banner = nullptr;
 		std::string path = "./Songs/" + name + "/" + options[selection]->getName();
 		for (const auto& entry : std::filesystem::directory_iterator(path)) {
 			if (entry.is_regular_file()) {
@@ -175,14 +173,13 @@ public:
 					int width, height;
 					if (GetImageSize(path.c_str(), &width, &height)) {
 						if (width <= BANNER_WIDTH && height <= BANNER_HEIGHT) {
-							banner = new olc::Sprite(path);
+							banner = std::make_shared<olc::Sprite>(path);
 							return;
 						}
 					}
 				}
 			}
 		}
-		banner = new olc::Sprite();
 	}
 
 	bool moveUp() override {
@@ -208,15 +205,15 @@ public:
 		loadAssets();
 	}
 
-	Menu* select() override {
+	std::shared_ptr<Menu> select() override {
 		return nullptr;
 	}
 
 	void draw(olc::PixelGameEngine* engine) override {
-		engine->DrawSprite(0, 0, background);
+		engine->DrawSprite(0, 0, background.get());
 
 		if (banner->width == BANNER_WIDTH && banner->height == BANNER_HEIGHT) {
-			engine->DrawSprite(engine->ScreenWidth() - BANNER_WIDTH, 0, banner);
+			engine->DrawSprite(engine->ScreenWidth() - BANNER_WIDTH, 0, banner.get());
 		}
 		else {
 			engine->FillRect(engine->ScreenWidth() - BANNER_WIDTH, 0, BANNER_WIDTH, BANNER_HEIGHT, olc::DARK_GREY);
@@ -240,10 +237,7 @@ public:
 	}
 
 	void exit() override {
-		for (size_t i = 0; i < options.size(); i++) {
-			delete options[i];
-			options[i] = nullptr;
-		}
+
 	}
 };
 
