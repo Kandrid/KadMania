@@ -17,8 +17,12 @@ private:
 	MenuManager mManager;
 
 	sf::Music jukebox;
+
 	sf::SoundBuffer tick, select, exit;
+
 	sf::Sound soundbox;
+
+	sf::Time themeOffset = sf::milliseconds(1800);
 
 	std::shared_ptr<olc::Sprite> default_background;
 
@@ -76,13 +80,18 @@ public:
 	{
 		if (musicPath != musicPathBuffer) {
 			if (musicPathBuffer == "") {
-				if (!jukebox.openFromFile("audio/ambience.ogg")) {
-					return false;
+				if (musicPath != DEFAULT_MUSIC) {
+					if (!jukebox.openFromFile(DEFAULT_MUSIC)) {
+						return false;
+					}
+					jukebox.setPlayingOffset(themeOffset);
+					jukebox.setLoop(true);
+					jukebox.play();
+					musicPath = DEFAULT_MUSIC;
 				}
-				jukebox.setPlayingOffset(sf::milliseconds(1800));
-				jukebox.setLoop(true);
-				jukebox.play();
-				musicPath = DEFAULT_MUSIC;
+				else {
+					themeOffset = jukebox.getPlayingOffset();
+				}
 			}
 			else {
 				if (!jukebox.openFromFile(musicPathBuffer)) {

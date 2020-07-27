@@ -22,6 +22,7 @@ public:
 		this->name = name;
 		this->background = background;
 		this->banner = nullptr;
+		this->musicPath = musicPath;
 	}
 
 	void loadSongList() {
@@ -162,19 +163,21 @@ public:
 	}
 
 	void loadAssets() {
+		bool bannerLoaded = false;
+		*musicPath = "";
 		std::string path = "./Songs/" + name + "/" + options[selection]->getName();
 		for (const auto& entry : std::filesystem::directory_iterator(path)) {
 			if (entry.is_regular_file()) {
 				path = entry.path().generic_string();
-				if (path.size() > 3 && path.substr(path.size() - 3) == "ogg") {
-
+				if (*musicPath == "" && path.size() >= 3 && path.substr(path.size() - 3) == "ogg") {
+					*musicPath = path;
 				}
-				else {
+				else if (!bannerLoaded) {
 					int width, height;
 					if (GetImageSize(path.c_str(), &width, &height)) {
 						if (width <= BANNER_WIDTH && height <= BANNER_HEIGHT) {
 							banner = std::make_shared<olc::Sprite>(path);
-							return;
+							bannerLoaded = true;
 						}
 					}
 				}
@@ -237,7 +240,7 @@ public:
 	}
 
 	void exit() override {
-
+		*musicPath = "";
 	}
 };
 
