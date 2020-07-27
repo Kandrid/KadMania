@@ -9,6 +9,7 @@
 
 class PackMenu : public Menu {
 private:
+
 	const uint32_t BANNER_WIDTH = 512;
 	const uint32_t BANNER_HEIGHT = 160;
 
@@ -16,7 +17,9 @@ private:
 	std::shared_ptr<olc::Sprite> background;
 
 	std::string* musicPath;
+
 public:
+
 	PackMenu(std::string name, std::shared_ptr<olc::Sprite> background, std::string* musicPath) {
 		this->nested = true;
 		this->name = name;
@@ -48,13 +51,10 @@ public:
 	int scanhead(FILE* infile, int* image_width, int* image_height) {
 		int marker = 0;
 		int dummy = 0;
-		if (getc(infile) != 0xFF || getc(infile) != 0xD8)
-			return 0;
 
-		for (;
-			;) {
+		if (getc(infile) != 0xFF || getc(infile) != 0xD8) return 0;
 
-
+		for (;;) {
 			int discarded_bytes = 0;
 			readbyte(marker, infile);
 			while (marker != 0xFF) {
@@ -104,7 +104,7 @@ public:
 					length--;
 				}
 			}
-				   break;
+				break;
 			}
 		}
 	}
@@ -112,11 +112,14 @@ public:
 	bool GetImageSize(const char* fn, int* x, int* y)
 	{
 		FILE* f = fopen(fn, "rb"); if (f == 0) return false;
+
 		if (scanhead(f, x, y)) {
 			fclose(f);
 			return true;
 		}
+
 		fseek(f, 0, SEEK_END); long len = ftell(f); fseek(f, 0, SEEK_SET);
+
 		if (len < 24) { fclose(f); return false; }
 
 		// Strategy:
@@ -131,11 +134,15 @@ public:
 		if (buf[0] == 0xFF && buf[1] == 0xD8 && buf[2] == 0xFF && buf[3] == 0xE0 && buf[6] == 'J' && buf[7] == 'F' && buf[8] == 'I' && buf[9] == 'F')
 		{
 			long pos = 2;
+
 			while (buf[2] == 0xFF)
 			{
 				if (buf[3] == 0xC0 || buf[3] == 0xC1 || buf[3] == 0xC2 || buf[3] == 0xC3 || buf[3] == 0xC9 || buf[3] == 0xCA || buf[3] == 0xCB) break;
+
 				pos += 2 + (buf[4] << 8) + buf[5];
+
 				if (pos + 12 > len) break;
+
 				fseek(f, pos, SEEK_SET); fread(buf + 2, 1, 12, f);
 			}
 		}
@@ -147,6 +154,7 @@ public:
 		{
 			*x = buf[6] + (buf[7] << 8);
 			*y = buf[8] + (buf[9] << 8);
+
 			return true;
 		}
 
@@ -156,6 +164,7 @@ public:
 		{
 			*x = (buf[16] << 24) + (buf[17] << 16) + (buf[18] << 8) + (buf[19] << 0);
 			*y = (buf[20] << 24) + (buf[21] << 16) + (buf[22] << 8) + (buf[23] << 0);
+
 			return true;
 		}
 
@@ -165,15 +174,19 @@ public:
 	void loadAssets() {
 		bool bannerLoaded = false;
 		*musicPath = "";
+
 		std::string path = "./Songs/" + name + "/" + options[selection]->getName();
+
 		for (const auto& entry : std::filesystem::directory_iterator(path)) {
 			if (entry.is_regular_file()) {
 				path = entry.path().generic_string();
+
 				if (*musicPath == "" && path.size() >= 3 && path.substr(path.size() - 3) == "ogg") {
 					*musicPath = path;
 				}
 				else if (!bannerLoaded) {
 					int width, height;
+
 					if (GetImageSize(path.c_str(), &width, &height)) {
 						if (width <= BANNER_WIDTH && height <= BANNER_HEIGHT) {
 							banner = std::make_shared<olc::Sprite>(path);
@@ -188,18 +201,24 @@ public:
 	bool moveUp() override {
 		if (selection > 0) {
 			selection--;
+
 			loadAssets();
+
 			return true;
 		}
+
 		return false;
 	}
 
 	bool moveDown() override {
 		if (selection < options.size() - 1) {
 			selection++;
+
 			loadAssets();
+
 			return true;
 		}
+
 		return false;
 	}
 

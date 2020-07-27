@@ -5,6 +5,7 @@
 
 class TempMenu : public Menu {
 public:
+
 	TempMenu(const char name[]) {
 		this->name = name;
 	}

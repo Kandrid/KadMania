@@ -4,8 +4,8 @@
 #include "Menu.h"
 
 class BasicMenu : public Menu {
-private:
 public:
+
 	std::shared_ptr<olc::Sprite> background;
 
 	BasicMenu(const char name[], std::shared_ptr<olc::Sprite> background) {

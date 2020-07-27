@@ -18,7 +18,9 @@ private:
 
 	sf::Music jukebox;
 
-	sf::SoundBuffer tick, select, exit;
+	enum Sound {TICK, SELECT, EXIT, SOUND_COUNT};
+
+	sf::SoundBuffer sounds[SOUND_COUNT];
 
 	sf::Sound soundbox;
 
@@ -50,14 +52,16 @@ public:
 
 		std::shared_ptr<BasicMenu> mainMenu = std::make_shared<BasicMenu>("Main", default_background);
 		mainMenu->addOption(std::make_shared<PackListMenu>("Songs", default_background, &musicPathBuffer));
+
 		std::shared_ptr<BasicMenu> optionMenu = std::make_shared<BasicMenu>("Options", default_background);
 		optionMenu->addOption(std::make_shared<ConfigMenu>("Volume", &volume, 0, 100));
+
 		mainMenu->addOption(optionMenu);
 		mainMenu->addOption(std::make_shared<TempMenu>("Exit"));
 
 		mManager = MenuManager(mainMenu, this);
 
-		if (!jukebox.openFromFile("audio/ambience.ogg") || !tick.loadFromFile("audio/tick.ogg") || !select.loadFromFile("audio/select.ogg") || !exit.loadFromFile("audio/exit.ogg")) {
+		if (!jukebox.openFromFile("audio/ambience.ogg") || !sounds[TICK].loadFromFile("audio/tick.ogg") || !sounds[SELECT].loadFromFile("audio/select.ogg") || !sounds[EXIT].loadFromFile("audio/exit.ogg")) {
 			return false;
 		}
 
@@ -72,7 +76,6 @@ public:
 	}
 
 	bool OnUserDestroy() override {
-		mManager.cleanup();
 		return true;
 	}
 
@@ -84,6 +87,7 @@ public:
 					if (!jukebox.openFromFile(DEFAULT_MUSIC)) {
 						return false;
 					}
+
 					jukebox.setPlayingOffset(themeOffset);
 					jukebox.setLoop(true);
 					jukebox.play();
@@ -97,8 +101,10 @@ public:
 				if (!jukebox.openFromFile(musicPathBuffer)) {
 					return false;
 				}
+
 				jukebox.setLoop(true);
 				jukebox.play();
+
 				musicPath = musicPathBuffer;
 			}
 		}
@@ -109,7 +115,7 @@ public:
 
 		if (GetKey(olc::Key::ESCAPE).bPressed) {
 			if (mManager.exitMenu()) {
-				soundbox.setBuffer(exit);
+				soundbox.setBuffer(sounds[EXIT]);
 				soundbox.play();
 				soundbox.setPlayingOffset(sf::milliseconds(200));
 			}
@@ -119,7 +125,7 @@ public:
 		}
 		else if (GetKey(olc::Key::ENTER).bPressed) {
 			if (mManager.selectMenu()) {
-				soundbox.setBuffer(select);
+				soundbox.setBuffer(sounds[SELECT]);
 				soundbox.play();
 			}
 			if (mManager.getCurrentMenu()->getSelection()) {
@@ -130,15 +136,17 @@ public:
 		}
 		else if (GetKey(olc::Key::UP).bPressed) {
 			t1 = clock.now();
+
 			if (mManager.upMenu()) {
-				soundbox.setBuffer(tick);
+				soundbox.setBuffer(sounds[TICK]);
 				soundbox.play();
 			}
 		}
 		else if (GetKey(olc::Key::DOWN).bPressed) {
 			t1 = clock.now();
+
 			if (mManager.downMenu()) {
-				soundbox.setBuffer(tick);
+				soundbox.setBuffer(sounds[TICK]);
 				soundbox.play();
 			}
 		}
@@ -150,16 +158,18 @@ public:
 				if (GetKey(olc::Key::UP).bHeld) {
 					buttonHeld = true;
 					t1 = clock.now();
+
 					if (mManager.upMenu()) {
-						soundbox.setBuffer(tick);
+						soundbox.setBuffer(sounds[TICK]);
 						soundbox.play();
 					}
 				}
 				else if (GetKey(olc::Key::DOWN).bHeld) {
 					buttonHeld = true;
 					t1 = clock.now();
+
 					if (mManager.downMenu()) {
-						soundbox.setBuffer(tick);
+						soundbox.setBuffer(sounds[TICK]);
 						soundbox.play();
 					}
 				}

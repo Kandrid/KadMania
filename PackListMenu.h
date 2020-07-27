@@ -8,8 +8,10 @@
 
 class PackListMenu : public Menu {
 private:
+
 	std::shared_ptr<olc::Sprite> background;
 	std::string* musicPath;
+
 public:
 	PackListMenu(const char name[], std::shared_ptr<olc::Sprite> background, std::string* musicPath) {
 		this->nested = true;

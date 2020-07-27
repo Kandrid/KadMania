@@ -11,10 +11,15 @@
 
 class MenuManager {
 private:
-	olc::PixelGameEngine* engine;
+
+	olc::PixelGameEngine* engine = nullptr;
+
 	std::stack<std::shared_ptr<Menu>> menuStack;
+
 	std::shared_ptr<Menu> root;
+
 public:
+
 	MenuManager() {}
 
 	MenuManager(std::shared_ptr<Menu> root, olc::PixelGameEngine* engine) {
@@ -39,8 +44,10 @@ public:
 
 		if (newMenu) {
 			newMenu->start();
+
 			if (newMenu->isNested()) {
 				menuStack.push(newMenu);
+
 				return true;
 			}
 		}
@@ -52,17 +59,15 @@ public:
 		if (menuStack.size() > 1) {
 			menuStack.top()->exit();
 			menuStack.pop();
+
 			return true;
 		}
+
 		return false;
 	}
 
 	void drawMenu() {
 		menuStack.top()->draw(engine);
-	}
-
-	void cleanup() {
-		root->free();
 	}
 };
 
