@@ -2,6 +2,7 @@
 #define PACK_MENU_H
 #pragma warning(disable : 4996)
 
+#include "ChartReader.h"
 #include "Menu.h"
 
 #include <fstream>
@@ -16,6 +17,8 @@ private:
 	std::shared_ptr<olc::Sprite> banner;
 	std::shared_ptr<olc::Sprite> background;
 
+	std::vector<std::string> titles;
+
 	std::string* musicPath;
 
 public:
@@ -28,12 +31,39 @@ public:
 		this->musicPath = musicPath;
 	}
 
+	std::string standardize(std::string str) {
+		std::string result;
+
+		for (size_t i = 0; i < str.size(); i++) {
+			if (str[i] < 32 || str[i] > 126) {
+				result.push_back('?');
+			}
+			else {
+				result.push_back(str[i]);
+			}
+		}
+
+		return result;
+	}
+
 	void loadSongList() {
+		ChartReader chartReader = ChartReader();
+
+		titles.clear();
 		options.clear();
 
-		for (const auto& entry : std::filesystem::directory_iterator("./Songs/" + name)) {
-			if (entry.is_directory()) {
-				options.push_back(std::make_shared<TempMenu>(entry.path().filename().string().c_str()));
+		auto iter = std::filesystem::recursive_directory_iterator("./Songs/" + name);
+
+		for (const auto& entry : iter) {
+			std::string filePath = entry.path().generic_string();
+
+			if (entry.is_directory() && filePath.find("/_") == std::string::npos && iter.depth() == 0) {
+				options.push_back(std::make_shared<TempMenu>(filePath.c_str()));
+			}
+			else if (filePath.size() >= 3 && filePath.substr(filePath.size() - 2) == "sm" || filePath.substr(filePath.size() - 3) == "ssc") {
+				chartReader.loadChartData(filePath);
+
+				titles.push_back(standardize(chartReader.title));
 			}
 		}
 	}
@@ -172,30 +202,38 @@ public:
 	}
 
 	void loadAssets() {
-		bool bannerLoaded = false;
-		*musicPath = "";
+		ChartReader chartReader = ChartReader();
+		banner = nullptr;
 
-		std::string path = "./Songs/" + name + "/" + options[selection]->getName();
+		std::string path = options[selection]->getName();
 
 		for (const auto& entry : std::filesystem::directory_iterator(path)) {
-			if (entry.is_regular_file()) {
-				path = entry.path().generic_string();
+			std::string filePath = entry.path().generic_string();
 
-				if (*musicPath == "" && path.size() >= 3 && path.substr(path.size() - 3) == "ogg") {
-					*musicPath = path;
-				}
-				else if (!bannerLoaded) {
-					int width, height;
+			if (filePath.size() >= 3 && filePath.substr(filePath.size() - 2) == "sm" || filePath.substr(filePath.size() - 3) == "ssc") {
+				if (chartReader.loadChartData(filePath)) {
+					*musicPath = path + "/" + chartReader.music;
 
-					if (GetImageSize(path.c_str(), &width, &height)) {
-						if (width <= BANNER_WIDTH && height <= BANNER_HEIGHT) {
-							banner = std::make_shared<olc::Sprite>(path);
-							bannerLoaded = true;
+					if (chartReader.banner != "") {
+						int width, height;
+						std::string bannerPath = path + "/" + chartReader.banner;
+
+						if (GetImageSize(bannerPath.c_str(), &width, &height)) {
+							if (static_cast<uint32_t>(width) <= BANNER_WIDTH && static_cast<uint32_t>(height) <= BANNER_HEIGHT) {
+								banner = std::make_shared<olc::Sprite>(bannerPath);
+							}
 						}
 					}
 				}
+				else {
+					std::cout << "Unable to load chart data" << std::endl;
+				}
+
+				return;
 			}
 		}
+
+		std::cout << "Chart data not found" << std::endl;
 	}
 
 	bool moveUp() override {
@@ -234,7 +272,7 @@ public:
 	void draw(olc::PixelGameEngine* engine) override {
 		engine->DrawSprite(0, 0, background.get());
 
-		if (banner->width == BANNER_WIDTH && banner->height == BANNER_HEIGHT) {
+		if (banner && banner->width == BANNER_WIDTH && banner->height == BANNER_HEIGHT) {
 			engine->DrawSprite(engine->ScreenWidth() - BANNER_WIDTH, 0, banner.get());
 		}
 		else {
@@ -243,8 +281,8 @@ public:
 
 		engine->SetPixelMode(olc::Pixel::Mode::ALPHA);
 
-		uint32_t spacing = engine->ScreenHeight() / options.size();
-		uint32_t scaling = spacing / 9;
+		int32_t spacing = engine->ScreenHeight() / static_cast<int32_t>(options.size());
+		int32_t scaling = spacing / 9;
 
 		if (spacing > 50) spacing = 50;
 
@@ -252,7 +290,7 @@ public:
 		if (scaling < 1) scaling = 1;
 
 		for (size_t i = 0; i < options.size(); i++) {
-			engine->DrawString(spacing, 5 + i * spacing, options[i]->getName(), selection == i ? olc::WHITE : olc::PixelF(100, 100, 100, 0.5f), scaling);
+			engine->DrawString(spacing, 5 + static_cast<int32_t>(i) * spacing, titles[i], selection == i ? olc::WHITE : olc::PixelF(100, 100, 100, 0.5f), scaling);
 		}
 
 		engine->SetPixelMode(olc::Pixel::Mode::NORMAL);

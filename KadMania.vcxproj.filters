@@ -44,5 +44,8 @@
     <ClInclude Include="PackListMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ChartReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

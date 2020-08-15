@@ -1,7 +1,10 @@
 #define OLC_PGE_APPLICATION
+
 #include "olcPixelGameEngine.h"
-#include <SFML/Audio.hpp>
 #include "MenuManager.h"
+
+#include <SFML/Audio.hpp>
+
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -99,7 +102,17 @@ public:
 			}
 			else {
 				if (!jukebox.openFromFile(musicPathBuffer)) {
-					return false;
+					if (!jukebox.openFromFile(DEFAULT_MUSIC)) {
+						return false;
+					}
+
+					jukebox.setPlayingOffset(themeOffset);
+					jukebox.setLoop(true);
+					jukebox.play();
+					musicPath = DEFAULT_MUSIC;
+					musicPathBuffer = "";
+
+					return true;
 				}
 
 				jukebox.setLoop(true);

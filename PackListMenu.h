@@ -42,8 +42,8 @@ public:
 		engine->DrawSprite(0, 0, background.get());
 		engine->SetPixelMode(olc::Pixel::Mode::ALPHA);
 
-		uint32_t spacing = engine->ScreenHeight() / options.size();
-		uint32_t scaling = spacing / 9;
+		int32_t spacing = engine->ScreenHeight() / static_cast<int32_t>(options.size());
+		int32_t scaling = spacing / 9;
 
 		if (spacing > 50) spacing = 50;
 
@@ -51,7 +51,7 @@ public:
 		if (scaling < 1) scaling = 1;
 
 		for (size_t i = 0; i < options.size(); i++) {
-			engine->DrawString(spacing, 5 + i * spacing, options[i]->getName(), selection == i ? olc::WHITE : olc::PixelF(100, 100, 100, 0.5f), scaling);
+			engine->DrawString(spacing, 5 + static_cast<int32_t>(i) * spacing, options[i]->getName(), selection == i ? olc::WHITE : olc::PixelF(100, 100, 100, 0.5f), scaling);
 		}
 
 		engine->SetPixelMode(olc::Pixel::Mode::NORMAL);

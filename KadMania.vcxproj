@@ -146,6 +146,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="ChartReader.h" />
     <ClInclude Include="ConfigMenu.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="MenuManager.h" />
